@@ -4,8 +4,17 @@
 cmake_minimum_required (VERSION 3.8)
 project (azure-sphere-combo-cifar10-hlcore C)
 
+# include
+include_directories(${CMAKE_SOURCE_DIR} 
+					${CMAKE_SOURCE_DIR}/arducam_driver 
+					${CMAKE_SOURCE_DIR}/ili9341_driver)
+
+# macro
+add_compile_definitions(AzureSphere_CA7)
 # Create executable
-add_executable (${PROJECT_NAME} main.c)
+add_executable (${PROJECT_NAME} main.c delay.c
+								arducam_driver/ArduCAM.c arducam_driver/ll.c arducam_driver/ov2640_regs.c
+								ili9341_driver/ili9341.c ili9341_driver/ili9341_ll.c)
 target_link_libraries (${PROJECT_NAME} applibs pthread gcc_s c)
 
 # Add MakeImage post-build command

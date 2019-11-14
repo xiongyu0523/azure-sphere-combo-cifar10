@@ -3,7 +3,9 @@
     {
       "environment": "AzureSphere",
 
-      "AzureSphereTargetApiSet": "3"
+      "AzureSphereTargetApiSet": "3",
+      "AzureSphereTargetHardwareDefinitionDirectory": "Hardware\\mt3620_rdb",
+      "AzureSphereTargetHardwareDefinition": "sample_hardware.json"
     }
   ],
   "configurations": [
@@ -27,6 +29,14 @@
         {
           "name": "AZURE_SPHERE_TARGET_API_SET",
           "value": "${env.AzureSphereTargetApiSet}"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY",
+          "value": "${projectDir}\\${env.AzureSphereTargetHardwareDefinitionDirectory}"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION",
+          "value": "${env.AzureSphereTargetHardwareDefinition}"
         }
       ]
     },
@@ -50,6 +60,14 @@
         {
           "name": "AZURE_SPHERE_TARGET_API_SET",
           "value": "${env.AzureSphereTargetApiSet}"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION_DIRECTORY",
+          "value": "${projectDir}\\${env.AzureSphereTargetHardwareDefinitionDirectory}"
+        },
+        {
+          "name": "AZURE_SPHERE_TARGET_HARDWARE_DEFINITION",
+          "value": "${env.AzureSphereTargetHardwareDefinition}"
         }
       ]
     }

@@ -5,7 +5,9 @@
   "EntryPoint": "/bin/app",
   "CmdArgs": [],
   "Capabilities": {
-    "Gpio": [ 9 ],
+    "Gpio": [ "$ARDUCAM_CS", "$ILI9341_RST", "$ILI9341_DC", "$ILI9341_BL" ],
+    "I2cMaster": [ "$ARDUCAM_I2C" ],
+    "SpiMaster": [ "$ARDUCAM_SPI", "$ILI9341_SPI" ],
     "AllowedApplicationConnections": []
   },
   "ApplicationType": "Default"
