@@ -8,7 +8,7 @@
     "Gpio": [ "$ARDUCAM_CS", "$ILI9341_RST", "$ILI9341_DC", "$ILI9341_BL" ],
     "I2cMaster": [ "$ARDUCAM_I2C" ],
     "SpiMaster": [ "$ARDUCAM_SPI", "$ILI9341_SPI" ],
-    "AllowedApplicationConnections": []
+    "AllowedApplicationConnections": [ "6583cf17-d321-4d72-8283-0b7c5b56442b" ]
   },
   "ApplicationType": "Default"
 }
