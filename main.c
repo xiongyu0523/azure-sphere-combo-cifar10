@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <string.h>
+#include <pthread.h>
 
 #include <applibs/log.h>
 #include <time.h>
@@ -10,9 +11,11 @@
 #include <sys/socket.h>
 #include <applibs/application.h>
 
+
 #include "epoll_timerfd_utilities.h"
 #include "ArduCAM.h"
 #include "ili9341.h"
+#include "text.h"
 #include "delay.h"
 
 static void SocketEventHandler(EventData* eventData);
@@ -37,17 +40,17 @@ static EventData socketEventData = { .eventHandler = &SocketEventHandler };
 
 static void SocketEventHandler(EventData* eventData)
 {
-	const char* cifar10_label[] = { "Plane", "Car", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck" };
+	const char* cifar10_label[] = { "Plane", "Car  ", "Bird  ", "Cat  ", "Deer  ", "Dog  ", "Frog  ", "Horse", "Ship ", "Truck" };
 
-	uint8_t label;
-	ssize_t bytesReceived = recv(rtSocketFd, &label, sizeof(label), 0);
+	uint8_t index;
+	ssize_t bytesReceived = recv(rtSocketFd, &index, sizeof(index), 0);
 	if (bytesReceived < 0) {
 		Log_Debug("ERROR: Unable to receive message: %d (%s)\r\n", errno, strerror(errno));
-		//terminationRequired = true;
 		return;
 	}
 
-	Log_Debug("This is a %s\r\n", cifar10_label[label]);
+	lcd_set_text_cursor(10, 30);
+	lcd_display_string(cifar10_label[index]);
 }
 
 void resize(uint8_t *p_in, uint8_t *p_out)
@@ -70,18 +73,12 @@ void resize(uint8_t *p_in, uint8_t *p_out)
 	}
 }
 
-int main(int argc, char* argv[])
+static void* epoll_thread(void* ptr)
 {
-	Log_Debug("Exmaple to capture a JPEG image from ArduCAM mini 2MP Plus and send to Azure Blob\r\n");
+	Log_Debug("epoll_thread start\r\n");
 
 	epollFd = CreateEpollFd();
 	if (epollFd < 0) {
-		return -1;
-	}
-
-	rtSocketFd = Application_Socket(rtAppComponentId);
-	if (rtSocketFd == -1) {
-		Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
 		return -1;
 	}
 
@@ -96,7 +93,34 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
+	while (1) {
+		(void)WaitForEventAndCallHandler(epollFd);
+	}
+}
+
+
+int main(int argc, char* argv[])
+{
+	pthread_t thread_id;
+
+	Log_Debug("Exmaple to capture a JPEG image from ArduCAM mini 2MP Plus and send to Azure Blob\r\n");
+
+	rtSocketFd = Application_Socket(rtAppComponentId);
+	if (rtSocketFd == -1) {
+		Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
+		return -1;
+	}
+
+	if (pthread_create(&thread_id, NULL, epoll_thread, NULL)) {
+		Log_Debug("ERROR: creating thread fail\r\n");
+		return -1;
+	}
+
 	ili9341_init();
+
+	lcd_set_text_size(2);
+	lcd_set_text_cursor(10, 10);
+	lcd_display_string("Cifar-10 Demo");
 
 	// init hardware and probe camera
 	arducam_ll_init();

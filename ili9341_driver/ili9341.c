@@ -63,7 +63,7 @@ void ili9341_reset(void)
 	delay_ms(120);
 }
 
-static void ili9341_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+void ili9341_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	ili9341_write_cmd(LCD_COLUMN_ADDR);
 	ili9341_write_cmd_param(x0 >> 8);

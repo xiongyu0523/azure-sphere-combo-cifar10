@@ -116,5 +116,6 @@ void     ili9341_display_off(void);
 void	 ili9341_clean_screen(uint16_t color);
 void	 ili9341_fill_rect(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t color);
 void	 ili9341_draw_bitmap(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint8_t* p_bitmap);
-void ili9341_draw_rect(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t color);
+void	 ili9341_draw_rect(uint16_t x0, uint16_t y0, uint16_t width, uint16_t height, uint16_t color);
+void	 ili9341_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 #endif /* __ILI9341_H */
