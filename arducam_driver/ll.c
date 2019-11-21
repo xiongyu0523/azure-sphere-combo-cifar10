@@ -205,7 +205,7 @@ int ll_spi_init(void)
         return -1;
     }
 
-    int result = SPIMaster_SetBusSpeed(spiFd, 4000000);
+    int result = SPIMaster_SetBusSpeed(spiFd, 8000000);
     if (result < 0) {
         Log_Debug("ERROR: SPIMaster_SetBusSpeed: errno=%d (%s)\r\n", errno, strerror(errno));
         close(spiFd);

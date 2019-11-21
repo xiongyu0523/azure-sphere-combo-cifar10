@@ -22,8 +22,8 @@ static void SocketEventHandler(EventData* eventData);
 
 static const char rtAppComponentId[] = "6583cf17-d321-4d72-8283-0b7c5b56442b";
 
-#define DISPLAY_WIDTH	128
-#define DISPLAY_HEIGHT	128
+#define DISPLAY_WIDTH	160
+#define DISPLAY_HEIGHT	160
 #define DISPLAY_DEPTH	2
 
 #define CFIAR10_WIDTH	32
@@ -49,18 +49,18 @@ static void SocketEventHandler(EventData* eventData)
 		return;
 	}
 
-	lcd_set_text_cursor(10, 30);
+	lcd_set_text_cursor(5, 30);
 	lcd_display_string(cifar10_label[index]);
 }
 
 void resize(uint8_t *p_in, uint8_t *p_out)
 {
-	int resize_ratio = 4 * 2; // 128/32 = 4 x 2 bytes per pixel
+	int resize_ratio = 5 * 2; // 128/32 = 4 x 2 bytes per pixel
 
 	for (int y = 0; y < 32; y++) {
 		for (int x = 0; x < 32; x++) {
 
-			int orig_img_loc = y * 128 * resize_ratio + x * resize_ratio;
+			int orig_img_loc = y * 160 * resize_ratio + x * resize_ratio;
 			int out_img_loc = (y * 32 + x) * 3;
 
 			uint8_t pix_hi = p_in[orig_img_loc];
@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
 	ili9341_init();
 
 	lcd_set_text_size(2);
-	lcd_set_text_cursor(10, 10);
+	lcd_set_text_cursor(5, 10);
 	lcd_display_string("Cifar-10 Demo");
 
 	// init hardware and probe camera
@@ -134,7 +134,6 @@ int main(int argc, char* argv[])
 	}
 
 	// config Camera
-
 	arducam_set_format(BMP);
 	arducam_InitCAM();
 	delay_ms(1000);
@@ -148,7 +147,6 @@ int main(int argc, char* argv[])
 
 	while (1) {
 
-		// Trigger a capture and wait for data ready in DRAM
 		arducam_start_capture();
 		while (!arducam_check_fifo_done());
 
@@ -162,7 +160,6 @@ int main(int argc, char* argv[])
 		arducam_set_fifo_burst();
 		arducam_read_fifo_burst(&s_CameraBuffer[0], img_len);
 		arducam_CS_HIGH();
-
 		arducam_clear_fifo_flag();
 
 		uint32_t r_pos = 320 * 2 * leftcorner_y + leftcorner_x * 2;
@@ -176,7 +173,6 @@ int main(int argc, char* argv[])
 		}
 
 		ili9341_draw_bitmap(leftcorner_x, leftcorner_y, DISPLAY_WIDTH, DISPLAY_HEIGHT, &s_DisplayBuffer[0]);
-
 		resize(&s_DisplayBuffer[0], &s_Cifar10ResizeBuffer[0]);
 
 		// max allowed size is 1KB for a single transfer
