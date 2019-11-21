@@ -23,19 +23,7 @@ static int spiFd;
 
 #elif defined(AzureSphere_CM4)
 
-#include <stdlib.h>
-
-#include "SPIMaster.h"
-#include "GPIO.h"
-#include "Log_Debug.h"
-
-#define MT3620_RDB_HEADER3_ISU3_SPI		MT3620_UNIT_ISU3
-#define MT3620_RDB_HEADER1_PIN4_GPIO	0
-#define MT3620_RDB_HEADER1_PIN6_GPIO	1
-#define MT3620_RDB_HEADER1_PIN8_GPIO	2
-
-static SpiMaster* SpiHandler;
-#define MAX_SPI_TRANSFER_BYTES	16
+// removed
 
 #endif
 
@@ -49,7 +37,7 @@ void ili9341_ll_reset_low(void)
 
 #elif defined(AzureSphere_CM4)
 
-	(void)GPIO_Write(MT3620_RDB_HEADER1_PIN4_GPIO, 0);
+	// removed
 
 #endif
 }
@@ -61,7 +49,7 @@ void ili9341_ll_reset_high(void)
 
 #elif defined(AzureSphere_CM4)
 
-	(void)GPIO_Write(MT3620_RDB_HEADER1_PIN4_GPIO, 1);
+	// removed
 
 #endif
 }
@@ -74,7 +62,7 @@ void ili9341_ll_dc_low(void)
 
 #elif defined(AzureSphere_CM4)
 
-	(void)GPIO_Write(MT3620_RDB_HEADER1_PIN6_GPIO, 0);
+	// removed
 
 #endif
 }
@@ -87,7 +75,7 @@ void ili9341_ll_dc_high(void)
 
 #elif defined(AzureSphere_CM4)
 
-	(void)GPIO_Write(MT3620_RDB_HEADER1_PIN6_GPIO, 1);
+	// removed
 
 #endif
 }
@@ -100,7 +88,7 @@ void ili9341_ll_backlight_off(void)
 
 #elif defined(AzureSphere_CM4)
 
-	(void)GPIO_Write(MT3620_RDB_HEADER1_PIN8_GPIO, 0);
+	// removed
 
 #endif
 }
@@ -113,7 +101,7 @@ void ili9341_ll_backlight_on(void)
 
 #elif defined(AzureSphere_CM4)
 
-	(void)GPIO_Write(MT3620_RDB_HEADER1_PIN8_GPIO, 1);
+	// removed
 
 #endif
 }
@@ -172,33 +160,7 @@ int ili9341_ll_init(void)
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = GPIO_ConfigurePinForOutput(MT3620_RDB_HEADER1_PIN4_GPIO);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		return -1;
-	}
-	GPIO_Write(MT3620_RDB_HEADER1_PIN4_GPIO, 1);
-
-	ret = GPIO_ConfigurePinForOutput(MT3620_RDB_HEADER1_PIN6_GPIO);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		return -1;
-	}
-	GPIO_Write(MT3620_RDB_HEADER1_PIN6_GPIO, 1);
-
-	ret = GPIO_ConfigurePinForOutput(MT3620_RDB_HEADER1_PIN8_GPIO);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		return -1;
-	}
-	GPIO_Write(MT3620_RDB_HEADER1_PIN8_GPIO, 0);
-
-	SpiHandler = SpiMaster_Open(MT3620_RDB_HEADER3_ISU3_SPI);
-	SpiMaster_ConfigDMA(SpiHandler, false);
-	SpiMaster_Select(SpiHandler, CS_LINE0);
-	SpiMaster_Configure(SpiHandler, false, false, 10000000);
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -229,13 +191,7 @@ int ili9341_ll_spi_tx_u8(uint8_t data)
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = SpiMaster_WriteSync(SpiHandler, &data, 1);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: SpiMaster_WriteSync: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -266,13 +222,7 @@ int ili9341_ll_spi_rx_u8(uint8_t *data)
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = SpiMaster_ReadSync(SpiHandler, &data, 1);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: SpiMaster_ReadSync: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -307,13 +257,7 @@ int ili9341_ll_spi_tx_u16(uint16_t data)
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = SpiMaster_WriteSync(SpiHandler, &buf, 2);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: SpiMaster_WriteSync: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }

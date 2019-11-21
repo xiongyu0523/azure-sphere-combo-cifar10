@@ -21,22 +21,7 @@ static int spiFd;
 
 #elif defined(AzureSphere_CM4)
 
-#include <stdlib.h>
-#include <string.h>
-
-#include "SPIMaster.h"
-#include "I2CMaster.h"
-#include "GPIO.h"
-#include "Log_Debug.h"
-
-#define MT3620_RDB_HEADER2_ISU0_I2C		MT3620_UNIT_ISU0
-#define MT3620_RDB_HEADER4_ISU1_SPI		MT3620_UNIT_ISU1
-#define MT3620_RDB_HEADER4_PIN14_GPIO	4
-
-static SpiMaster* SpiHandler;
-static I2CMaster* I2cHandler;
-
-#define MAX_SPI_TRANSFER_BYTES	16
+// removed
 
 #endif
 
@@ -58,13 +43,7 @@ int ll_gpio_init(void)
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = GPIO_ConfigurePinForOutput(MT3620_RDB_HEADER4_PIN14_GPIO);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -77,7 +56,7 @@ void ll_gpio_cs_go_low(void)
 
 #elif defined(AzureSphere_CM4)
 	
-	(void)GPIO_Write(MT3620_RDB_HEADER4_PIN14_GPIO, 0);
+	// removed
 
 #endif
 }
@@ -90,7 +69,7 @@ void ll_gpio_cs_go_high(void)
 
 #elif defined(AzureSphere_CM4)
 
-	(void)GPIO_Write(MT3620_RDB_HEADER4_PIN14_GPIO, 1);
+	// removed
 
 #endif
 }
@@ -123,10 +102,7 @@ int ll_i2c_init(void)
 
 #elif defined(AzureSphere_CM4)
 
-	I2cHandler = I2CMaster_Open(MT3620_UNIT_ISU0);
-	I2CMaster_SetBusSpeed(I2cHandler, I2C_BUS_SPEED_STANDARD);
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -148,13 +124,7 @@ int ll_i2c_tx(uint8_t* tx_data, uint32_t tx_len)
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = I2CMaster_WriteSync(I2cHandler, OV2640_I2C_ADDR, tx_data, tx_len);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: I2CMaster_WriteSync: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -176,13 +146,7 @@ int ll_i2c_tx_then_rx(uint8_t* tx_data, uint32_t tx_len, uint8_t* rx_data, uint3
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = I2CMaster_WriteThenReadSync(I2cHandler, OV2640_I2C_ADDR, tx_data, tx_len, rx_data, rx_len);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: I2CMaster_WriteThenReadSync: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -223,12 +187,7 @@ int ll_spi_init(void)
 
 #elif defined(AzureSphere_CM4)
 
-	SpiHandler = SpiMaster_Open(MT3620_UNIT_ISU1);
-	SpiMaster_ConfigDMA(SpiHandler, false);
-	SpiMaster_Select(SpiHandler, CS_NONE);
-	SpiMaster_Configure(SpiHandler, false, false, 4000000);
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -267,13 +226,7 @@ int ll_spi_tx(uint8_t *tx_data, uint32_t tx_len)
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = SpiMaster_WriteSync(SpiHandler, tx_data, tx_len);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: SpiMaster_WriteSync: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -317,34 +270,8 @@ int ll_spi_rx(uint8_t *rx_data, uint32_t rx_len)
     return 0;
 
 #elif defined(AzureSphere_CM4)
-#if 0
-	int32_t ret = SpiMaster_ReadSync(SpiHandler, rx_data, rx_len);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: SpiMaster_ReadSync: %d\r\n", ret);
-		return -1;
-	}
 
-	return 0;
-#endif
-	uint32_t numOfXfer = (rx_len % MAX_SPI_TRANSFER_BYTES == 0) ? (rx_len / MAX_SPI_TRANSFER_BYTES) : (rx_len / MAX_SPI_TRANSFER_BYTES + 1);
-
-	uint32_t offset = 0;
-	int32_t sizeleft = (int32_t)rx_len;
-
-	while (numOfXfer > 0) {
-
-		int32_t ret = SpiMaster_ReadSync(SpiHandler, rx_data + offset, sizeleft > MAX_SPI_TRANSFER_BYTES ? MAX_SPI_TRANSFER_BYTES : sizeleft);
-		if (ret != ERROR_NONE) {
-			Log_Debug("ERROR: SpiMaster_ReadSync: %d\r\n", ret);
-			return -1;
-		}
-
-		sizeleft -= MAX_SPI_TRANSFER_BYTES;
-		offset += MAX_SPI_TRANSFER_BYTES;
-		numOfXfer--;
-	};
-
-	return 0;
+	// removed
 
 #endif
 }
@@ -371,13 +298,7 @@ int ll_spi_tx_then_rx(uint8_t *tx_data, uint32_t tx_len, uint8_t *rx_data, uint3
 
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret = SpiMaster_WriteThenReadSync(SpiHandler, tx_data, tx_len, rx_data, rx_len);
-	if (ret != ERROR_NONE) {
-		Log_Debug("ERROR: SpiMaster_WriteThenReadSync: %d\r\n", ret);
-		return -1;
-	}
-
-	return 0;
+	// removed
 
 #endif
 }

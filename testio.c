@@ -8,13 +8,7 @@
 
 #elif defined(AzureSphere_CM4)
 
-#include "GPIO.h"
-#include "Log_Debug.h"
-
-#define TESTIO_0	4
-#define TESTIO_1	5
-#define TESTIO_2	6
-#define TESTIO_3	7
+// removed
 
 #endif
 
@@ -56,43 +50,8 @@ void testio_init(uint8_t bit_mask)
 	}
 #elif defined(AzureSphere_CM4)
 
-	int32_t ret;
+	// removed
 
-	if (bit_mask & TESTIO_0_MASK) {
-		ret = GPIO_ConfigurePinForOutput(TESTIO_0);
-		if (ret != ERROR_NONE) {
-			Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		}
-		GPIO_Write(TESTIO_0, 1);
-		testIoFd[0] = TESTIO_0;
-	}
-
-	if (bit_mask & TESTIO_1_MASK) {
-		ret = GPIO_ConfigurePinForOutput(TESTIO_1);
-		if (ret != ERROR_NONE) {
-			Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		}
-		GPIO_Write(TESTIO_1, 1);
-		testIoFd[1] = TESTIO_1;
-	}
-
-	if (bit_mask & TESTIO_2_MASK) {
-		ret = GPIO_ConfigurePinForOutput(TESTIO_2);
-		if (ret != ERROR_NONE) {
-			Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		}
-		GPIO_Write(TESTIO_2, 1);
-		testIoFd[2] = TESTIO_2;
-	}
-
-	if (bit_mask & TESTIO_3_MASK) {
-		ret = GPIO_ConfigurePinForOutput(TESTIO_3);
-		if (ret != ERROR_NONE) {
-			Log_Debug("ERROR: GPIO_ConfigurePinForOutput: %d\r\n", ret);
-		}
-		GPIO_Write(TESTIO_3, 1);
-		testIoFd[2] = TESTIO_3;
-	}
 #endif
 }
 
@@ -102,7 +61,7 @@ void testio_set_high(uint8_t index)
 #if defined(AzureSphere_CA7)
 		GPIO_SetValue(testIoFd[index], GPIO_Value_High);
 #elif defined(AzureSphere_CM4)
-		(void)GPIO_Write(testIoFd[index], 1);
+		// removed
 #endif
 	}
 }
@@ -113,7 +72,7 @@ void testio_set_low(uint8_t index)
 #if defined(AzureSphere_CA7)
 		GPIO_SetValue(testIoFd[index], GPIO_Value_Low);
 #elif defined(AzureSphere_CM4)
-		(void)GPIO_Write(testIoFd[index], 0);
+		// removed
 #endif
 	}
 }
