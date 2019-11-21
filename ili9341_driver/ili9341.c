@@ -2,18 +2,6 @@
 #include "ili9341.h"
 #include "delay.h"
 
-#define VERTICAL					0
-#define LANDSCAPE					1
-#define ORITENTATION				LANDSCAPE
-
-#if (ORITENTATION == VERTICAL)
-#define ILI9341_LCD_PIXEL_WIDTH     240
-#define ILI9341_LCD_PIXEL_HEIGHT    320
-#elif (ORITENTATION == LANDSCAPE)
-#define ILI9341_LCD_PIXEL_WIDTH     320
-#define ILI9341_LCD_PIXEL_HEIGHT    240
-#endif
-
 void ili9341_write_cmd(uint8_t reg)
 {
 	ili9341_ll_dc_low();

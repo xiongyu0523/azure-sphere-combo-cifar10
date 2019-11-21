@@ -109,6 +109,18 @@
 #define	YELLOW		0xFFE0
 #define	WHITE		0xFFFF
 
+#define VERTICAL					0
+#define LANDSCAPE					1
+#define ORITENTATION				LANDSCAPE
+
+#if (ORITENTATION == VERTICAL)
+#define ILI9341_LCD_PIXEL_WIDTH     240
+#define ILI9341_LCD_PIXEL_HEIGHT    320
+#elif (ORITENTATION == LANDSCAPE)
+#define ILI9341_LCD_PIXEL_WIDTH     320
+#define ILI9341_LCD_PIXEL_HEIGHT    240
+#endif
+
 void     ili9341_init(void);
 uint16_t ili9341_read_id4(void);
 void     ili9341_display_on(void);

@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #include <applibs/log.h>
 #include <time.h>
@@ -17,26 +18,48 @@
 #include "ili9341.h"
 #include "text.h"
 #include "delay.h"
+#include "tjpgd.h"
+
+#define CFG_MODE_JPEG
+//#define CFG_MODE_BITMAP
+
+#if (defined(CFG_MODE_JPEG) && defined(CFG_MODE_BITMAP)) || (!defined(CFG_MODE_JPEG) && !defined(CFG_MODE_BITMAP))
+#error "define CFG_MODE_JPEG or CFG_MODE_BITMAP"
+#endif
 
 static void SocketEventHandler(EventData* eventData);
 
 static const char rtAppComponentId[] = "6583cf17-d321-4d72-8283-0b7c5b56442b";
 
 #define DISPLAY_WIDTH	160
-#define DISPLAY_HEIGHT	160
+#if defined(CFG_MODE_JPEG)
+#define DISPLAY_HEIGHT	120
+#elif defined(CFG_MODE_BITMAP)
+#define DISPLAY_HEIGHT  160
+#endif
 #define DISPLAY_DEPTH	2
 
 #define CFIAR10_WIDTH	32
 #define CFIAR10_HEIGHT  32
 #define CFIAR10_DEPTH   3
 
-static uint8_t s_CameraBuffer[320 * 240 * 2 + 8]; // QVGA from Camera 
+#if defined(CFG_MODE_JPEG)
+static uint8_t s_CameraBuffer[4096]; // QQVGA JPG from Camera (usually 2.x KB)
+
+#define TJPD_BUF_SIZE 3100
+static uint8_t tJpgdBuffer[TJPD_BUF_SIZE];
+static uint32_t readIndexOfJpg = 0;
+
+#elif defined (CFG_MODE_BITMAP)
+static uint8_t s_CameraBuffer[320 * 240 * 2 + 8]; // QVGA from Camera
+#endif
 static uint8_t s_DisplayBuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT * DISPLAY_DEPTH];       // 128x128 Centralized display on LCD
 static uint8_t s_Cifar10ResizeBuffer[CFIAR10_WIDTH * CFIAR10_HEIGHT * CFIAR10_DEPTH]; // stanard cifar-10 format
 
 static int epollFd = 0;
 static int rtSocketFd = 0;
 static EventData socketEventData = { .eventHandler = &SocketEventHandler };
+static sem_t rtCoreReadySem;
 
 static void SocketEventHandler(EventData* eventData)
 {
@@ -51,17 +74,26 @@ static void SocketEventHandler(EventData* eventData)
 
 	lcd_set_text_cursor(5, 30);
 	lcd_display_string(cifar10_label[index]);
+
+	if (sem_post(&rtCoreReadySem) < 0) {
+		Log_Debug("ERROR: sem_post failed: %d (%s)\r\n", errno, strerror(errno));
+	}
 }
 
-void resize(uint8_t *p_in, uint8_t *p_out)
+static void resize(uint8_t* p_in, uint8_t* p_out)
 {
-	int resize_ratio = 5 * 2; // 128/32 = 4 x 2 bytes per pixel
+	// offset so that only the center part of rectangular image is selected for resizing
+	int width_offset = ((DISPLAY_WIDTH - DISPLAY_HEIGHT) / 2) * DISPLAY_DEPTH;
 
-	for (int y = 0; y < 32; y++) {
-		for (int x = 0; x < 32; x++) {
+	int yresize_ratio = (DISPLAY_WIDTH / CFIAR10_WIDTH) * DISPLAY_DEPTH;
+	int xresize_ratio = (DISPLAY_HEIGHT / CFIAR10_HEIGHT) * DISPLAY_DEPTH;
+	int resize_ratio = (xresize_ratio < yresize_ratio) ? xresize_ratio : yresize_ratio;
 
-			int orig_img_loc = y * 160 * resize_ratio + x * resize_ratio;
-			int out_img_loc = (y * 32 + x) * 3;
+	for (int y = 0; y < CFIAR10_WIDTH; y++) {
+		for (int x = 0; x < CFIAR10_HEIGHT; x++) {
+
+			int orig_img_loc = (y * DISPLAY_WIDTH * resize_ratio + x * resize_ratio + width_offset);
+			int out_img_loc = (y * CFIAR10_WIDTH + x) * CFIAR10_DEPTH;
 
 			uint8_t pix_hi = p_in[orig_img_loc];
 			uint8_t pix_lo = p_in[orig_img_loc + 1];
@@ -97,19 +129,52 @@ static void* epoll_thread(void* ptr)
 		(void)WaitForEventAndCallHandler(epollFd);
 	}
 }
+#if defined(CFG_MODE_JPEG)
+static uint16_t input_func(JDEC* jd, uint8_t* buff, uint16_t ndata)
+{
+	if (buff != NULL) {
 
+		memcpy(buff, &s_CameraBuffer[readIndexOfJpg], ndata);
+		readIndexOfJpg += ndata;
 
+	} else {
+		readIndexOfJpg += ndata;
+	}
+
+	return ndata;
+}
+
+static uint16_t out_func(JDEC* jd, void* bitmap, JRECT* rect)
+{
+	uint8_t *p_src, *p_dst;
+	uint16_t y, bws, bwd;
+
+	/* Copy the decompressed RGB rectanglar to the frame buffer (assuming RGB888 cfg) */
+	p_src = (uint8_t*)bitmap;
+	p_dst = s_DisplayBuffer + DISPLAY_DEPTH * (rect->top * DISPLAY_WIDTH + rect->left);		/* Left-top of destination rectangular */
+	bws = DISPLAY_DEPTH * (rect->right - rect->left + 1);									/* Width of source rectangular [byte] */
+	bwd = DISPLAY_DEPTH * DISPLAY_WIDTH;													/* Width of frame buffer [byte] */
+	for (y = rect->top; y <= rect->bottom; y++) {
+		memcpy(p_dst, p_src, bws);   /* Copy a line */
+		p_src += bws; p_dst += bwd;  /* Next line */
+	}
+
+	return 1;    /* Continue to decompress */
+}
+#endif
 int main(int argc, char* argv[])
 {
 	pthread_t thread_id;
 
-	Log_Debug("Exmaple to capture a JPEG image from ArduCAM mini 2MP Plus and send to Azure Blob\r\n");
+	Log_Debug("Exmaple to capture \r\n");
 
 	rtSocketFd = Application_Socket(rtAppComponentId);
 	if (rtSocketFd == -1) {
 		Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
 		return -1;
 	}
+
+	sem_init(&rtCoreReadySem, 0, 1);
 
 	if (pthread_create(&thread_id, NULL, epoll_thread, NULL)) {
 		Log_Debug("ERROR: creating thread fail\r\n");
@@ -134,19 +199,29 @@ int main(int argc, char* argv[])
 	}
 
 	// config Camera
+#if defined(CFG_MODE_JPEG)
+	arducam_set_format(JPEG);
+#elif defined (CFG_MODE_BITMAP)
 	arducam_set_format(BMP);
+#endif
 	arducam_InitCAM();
-	delay_ms(1000);
+#if defined(CFG_MODE_JPEG)
+	arducam_OV2640_set_JPEG_size(OV2640_160x120);
+#endif
+
+	delay_ms(100);
 	arducam_clear_fifo_flag();
 	arducam_flush_fifo();
 
-	uint16_t leftcorner_x = (320 - DISPLAY_WIDTH) / 2;
-	uint16_t leftcorner_y = (240 - DISPLAY_HEIGHT) / 2;
-
-	ili9341_draw_rect(leftcorner_x - 1, leftcorner_y - 1, DISPLAY_WIDTH + 2, DISPLAY_HEIGHT + 2, RED);
+	// draw a red rect of display area
+	uint16_t lc_x = (ILI9341_LCD_PIXEL_WIDTH - DISPLAY_WIDTH) / 2;
+	uint16_t lc_y = (ILI9341_LCD_PIXEL_HEIGHT - DISPLAY_HEIGHT) / 2;
+	if ((lc_x > 0) && (lc_y > 0)) {
+		ili9341_draw_rect(lc_x - 1, lc_y - 1, DISPLAY_WIDTH + 2, DISPLAY_HEIGHT + 2, RED);
+	}
 
 	while (1) {
-
+		
 		arducam_start_capture();
 		while (!arducam_check_fifo_done());
 
@@ -162,7 +237,26 @@ int main(int argc, char* argv[])
 		arducam_CS_HIGH();
 		arducam_clear_fifo_flag();
 
-		uint32_t r_pos = 320 * 2 * leftcorner_y + leftcorner_x * 2;
+#if defined(CFG_MODE_JPEG)
+		JRESULT ret;
+		JDEC jd;
+
+		readIndexOfJpg = 0;
+		ret = jd_prepare(&jd, input_func, &tJpgdBuffer[0], TJPD_BUF_SIZE, NULL);
+		if (ret != JDR_OK) {
+			Log_Debug("ERROR: jd_prepare failed, reason = %d\r\n", ret);
+			return -1;
+		}
+
+		ret = jd_decomp(&jd, out_func, 0);
+		if (ret != JDR_OK) {
+			Log_Debug("ERROR: jd_decomp failed, reason = %d\r\n", ret);
+			return -1;
+		}
+#endif
+
+#if defined(CFG_MODE_BITMAP)
+		uint32_t r_pos = 320 * 2 * lc_y + lc_x * 2;
 		uint32_t w_pos = 0;
 
 		for (uint8_t row = 0; row < DISPLAY_HEIGHT; row++) {
@@ -171,11 +265,21 @@ int main(int argc, char* argv[])
 			w_pos += DISPLAY_WIDTH * 2;
 			r_pos += 640;
 		}
+#elif defined(CFG_MODE_JPEG)
+		uint8_t tmpt;
+		for (uint32_t i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT * DISPLAY_DEPTH; i += 2) {
+			tmpt = s_DisplayBuffer[i];
+			s_DisplayBuffer[i] = s_DisplayBuffer[i + 1];
+			s_DisplayBuffer[i + 1] = tmpt;
+		}
+#endif
 
-		ili9341_draw_bitmap(leftcorner_x, leftcorner_y, DISPLAY_WIDTH, DISPLAY_HEIGHT, &s_DisplayBuffer[0]);
+		ili9341_draw_bitmap(lc_x, lc_y, DISPLAY_WIDTH, DISPLAY_HEIGHT, &s_DisplayBuffer[0]);
 		resize(&s_DisplayBuffer[0], &s_Cifar10ResizeBuffer[0]);
 
-		// max allowed size is 1KB for a single transfer
+		while (sem_wait(&rtCoreReadySem) == -1 && errno == EINTR);
+
+		// max allowed size is 1KB for a single transfer, split 3072 into 3 message
 		const uint32_t maxInterCoreBufSize = 1024;
 		for (uint32_t i = 0; i < sizeof(s_Cifar10ResizeBuffer) / maxInterCoreBufSize; i++) {
 			ssize_t bytesSent = send(rtSocketFd, &s_Cifar10ResizeBuffer[i * maxInterCoreBufSize], maxInterCoreBufSize, 0);
@@ -185,6 +289,7 @@ int main(int argc, char* argv[])
 				Log_Debug("ERROR: Write %d bytes, expect %d bytes\r\n", bytesSent, maxInterCoreBufSize);
 			}
 		}
+
 	}
 
 	Log_Debug("App Exit\r\n");

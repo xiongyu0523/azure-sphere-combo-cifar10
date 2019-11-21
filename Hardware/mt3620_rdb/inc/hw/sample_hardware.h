@@ -12,8 +12,8 @@
 #pragma once
 #include "mt3620_rdb.h"
 
-// Connect CS to RDB Header1 Pin12(GPIO4)
-#define ARDUCAM_CS MT3620_RDB_HEADER1_PIN12_GPIO
+// Connect CS to RDB Header1 Pin10(GPIO3)
+#define ARDUCAM_CS MT3620_RDB_HEADER1_PIN10_GPIO
 
 // Connect I2C to RDB Header2 Pin1(SDA) and Pin7(SCL)
 #define ARDUCAM_I2C MT3620_RDB_HEADER2_ISU0_I2C
@@ -32,4 +32,16 @@
 
 // Connect SPI to RDB Header3 Pin5(SCLK), Pin7(MOSI), Pin9(MISO), Pin11(CSA)
 #define ILI9341_SPI MT3620_RDB_HEADER3_ISU3_SPI
+
+// Connect Test IO 0 to RDB Header1 Pin12(GPIO4)
+#define TESTIO_0 MT3620_RDB_HEADER1_PIN12_GPIO
+
+// Connect Test IO 1 to RDB Header2 Pin4(GPIO5)
+#define TESTIO_1 MT3620_RDB_HEADER2_PIN4_GPIO
+
+// Connect Test IO 2 to RDB Header2 Pin6(GPIO6)
+#define TESTIO_2 MT3620_RDB_HEADER2_PIN6_GPIO
+
+// Connect Test IO 2 to RDB Header2 Pin8(GPIO7)
+#define TESTIO_3 MT3620_RDB_HEADER2_PIN8_GPIO
 
