@@ -107,8 +107,6 @@ static void resize(uint8_t* p_in, uint8_t* p_out)
 
 static void* epoll_thread(void* ptr)
 {
-	Log_Debug("epoll_thread start\r\n");
-
 	epollFd = CreateEpollFd();
 	if (epollFd < 0) {
 		return -1;
@@ -166,7 +164,7 @@ int main(int argc, char* argv[])
 {
 	pthread_t thread_id;
 
-	Log_Debug("Exmaple to capture \r\n");
+	Log_Debug("Example to demo image recognition with ArduCAM 2MP camera and ILI9341 TFT\r\n");
 
 	rtSocketFd = Application_Socket(rtAppComponentId);
 	if (rtSocketFd == -1) {
