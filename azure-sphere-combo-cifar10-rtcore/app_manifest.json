@@ -1,0 +1,11 @@
+{
+  "SchemaVersion": 1,
+  "Name": "azure-sphere-combo-cifar10-rtcore",
+  "ComponentId": "6583cf17-d321-4d72-8283-0b7c5b56442b",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedApplicationConnections": [ "8c48a678-97d3-4fef-a41a-78feb57a43ae" ]
+  },
+  "ApplicationType": "RealTimeCapable"
+}
