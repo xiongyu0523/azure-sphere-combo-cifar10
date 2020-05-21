@@ -20,8 +20,8 @@
 #include "delay.h"
 #include "tjpgd.h"
 
-#define CFG_MODE_JPEG
-//#define CFG_MODE_BITMAP
+//#define CFG_MODE_JPEG
+#define CFG_MODE_BITMAP
 
 #if (defined(CFG_MODE_JPEG) && defined(CFG_MODE_BITMAP)) || (!defined(CFG_MODE_JPEG) && !defined(CFG_MODE_BITMAP))
 #error "define CFG_MODE_JPEG or CFG_MODE_BITMAP"
@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
 
 	Log_Debug("Example to demo image recognition with ArduCAM 2MP camera and ILI9341 TFT\r\n");
 
-	rtSocketFd = Application_Socket(rtAppComponentId);
+	rtSocketFd = Application_Connect(rtAppComponentId);
 	if (rtSocketFd == -1) {
 		Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
 		return -1;

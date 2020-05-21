@@ -1,6 +1,6 @@
 ﻿# Azure Sphere Cifar-10 demo
 
-This project include two partner projects targeting Cortex-A7 HL core and Cortex-M4 RT core. The HL app capture image from [ArduCAM mini 2MP PLUS](https://www.arducam.com/docs/spi-cameras-for-arduino/hardware/arducam-shield-mini-2mp-plus/) and preview on 2.8 TFT [ER-TFTM028-4](https://www.buydisplay.com/default/2-8-inch-tft-touch-shield-for-arduino-w-capacitive-touch-screen-module). It then resizes the image to 32x32x3 tensor and send to RT app. The RT app waits for image data from HL app and run cifar-10 CMSIS-NN inference to recognize an ojbect and report result back to HL app. The model and code is extract from [ML-examples](https://github.com/ARM-software/ML-examples) Finally, a classification result will be displayed on the screen together with current preview images. 
+This project include two partner projects running on Cortex-A7 HL core and Cortex-M4 RT core. The HL app capture image from [ArduCAM mini 2MP PLUS](https://www.arducam.com/docs/spi-cameras-for-arduino/hardware/arducam-shield-mini-2mp-plus/) and preview on 2.8 TFT [ER-TFTM028-4](https://www.buydisplay.com/default/2-8-inch-tft-touch-shield-for-arduino-w-capacitive-touch-screen-module). It then resizes the image to 32x32x3 tensor and send to RT app. The RT app waits for image data from HL app and run cifar-10 CMSIS-NN inference to recognize an ojbect and report result back to HL app. The model and code is extract from [ML-examples](https://github.com/ARM-software/ML-examples) Finally, a classification result will be displayed on the screen together with current preview images. 
 
 ## Note
 
@@ -14,7 +14,7 @@ This project include two partner projects targeting Cortex-A7 HL core and Cortex
 ### Prep your device
 
 1. Ensure that your Azure Sphere device is connected to your PC, and your PC is connected to the internet.
-2. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 19.10. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
+2. Even if you've performed this set up previously, ensure that you have Azure Sphere SDK version 20.04. In an Azure Sphere Developer Command Prompt, run **azsphere show-version** to check. Download and install the [latest SDK](https://aka.ms/AzureSphereSDKDownload) as needed.
 3. Right-click the Azure Sphere Developer Command Prompt shortcut and select **More > Run as administrator**.
 4. At the command prompt issue the following command:
 
@@ -72,3 +72,7 @@ This project include two partner projects targeting Cortex-A7 HL core and Cortex
 5. In Solution Explorer, right-click the *CMakeLists.txt* file, and select **Build** to build the project and generate .imagepackage target.
 6. Double click *CMakeLists.txt* file and press F5 to start the application with debugging. 
 7. You will start to see image from camera preview and object name recognized on TFT.
+
+## Known issues
+
+After 20.04 OS/SDK, the jpeg mode does not work well unless launching a debug session. Use BITMAP by default.

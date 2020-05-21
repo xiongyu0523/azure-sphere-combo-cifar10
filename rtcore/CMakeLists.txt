@@ -1,8 +1,11 @@
 #  Copyright (c) Microsoft Corporation. All rights reserved.
 #  Licensed under the MIT License.
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
-PROJECT(azure-sphere-combo-cifar10-rtcore C)
+cmake_minimum_required(VERSION 3.10)
+project(azure-sphere-combo-cifar10-rtcore C)
+
+azsphere_configure_tools(TOOLS_REVISION "20.04")
+azsphere_configure_api(TARGET_API_SET "5+Beta2004")
 
 # include
 include_directories(${CMAKE_SOURCE_DIR} 
@@ -18,7 +21,7 @@ add_compile_definitions(ARM_MATH_DSP)
 add_compile_definitions(__FPU_PRESENT=1U)
 
 # Create executable
-ADD_EXECUTABLE(${PROJECT_NAME} main.c delay.c mt3620-intercore.c Log_Debug.c printf/printf.c
+add_executable(${PROJECT_NAME} main.c delay.c mt3620-intercore.c Log_Debug.c printf/printf.c
 							   nn/nn.c
 							   CMSIS/NN/Source/ActivationFunctions/arm_nn_activations_q7.c CMSIS/NN/Source/ActivationFunctions/arm_nn_activations_q15.c CMSIS/NN/Source/ActivationFunctions/arm_relu_q7.c CMSIS/NN/Source/ActivationFunctions/arm_relu_q15.c CMSIS/NN/Source/ActivationFunctions/arm_relu6_s8.c
 							   CMSIS/NN/Source/BasicMathFunctions/arm_elementwise_add_s8.c CMSIS/NN/Source/BasicMathFunctions/arm_elementwise_mul_s8.c
@@ -27,8 +30,7 @@ ADD_EXECUTABLE(${PROJECT_NAME} main.c delay.c mt3620-intercore.c Log_Debug.c pri
 							   CMSIS/NN/Source/NNSupportFunctions/arm_nn_accumulate_q7_to_q15.c CMSIS/NN/Source/NNSupportFunctions/arm_nn_add_q7.c CMSIS/NN/Source/NNSupportFunctions/arm_nn_mult_q7.c CMSIS/NN/Source/NNSupportFunctions/arm_nn_mult_q15.c CMSIS/NN/Source/NNSupportFunctions/arm_nntables.c CMSIS/NN/Source/NNSupportFunctions/arm_q7_to_q15_no_shift.c CMSIS/NN/Source/NNSupportFunctions/arm_q7_to_q15_reordered_no_shift.c CMSIS/NN/Source/NNSupportFunctions/arm_q7_to_q15_reordered_with_offset.c CMSIS/NN/Source/NNSupportFunctions/arm_q7_to_q15_with_offset.c
 							   CMSIS/NN/Source/PoolingFunctions/arm_avgpool_s8.c CMSIS/NN/Source/PoolingFunctions/arm_max_pool_s8.c CMSIS/NN/Source/PoolingFunctions/arm_max_pool_s8_opt.c CMSIS/NN/Source/PoolingFunctions/arm_pool_q7_HWC.c
 							   CMSIS/NN/Source/SoftmaxFunctions/arm_softmax_q7.c CMSIS/NN/Source/SoftmaxFunctions/arm_softmax_q15.c CMSIS/NN/Source/SoftmaxFunctions/arm_softmax_with_batch_q7.c)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)
-SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINK_DEPENDS ${CMAKE_SOURCE_DIR}/linker.ld)
+target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/CMSIS/DSP/Lib/GCC/libarm_cortexM4lf_math.a)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_DEPENDS ${CMAKE_SOURCE_DIR}/linker.ld)
 
-# Add MakeImage post-build command
-INCLUDE("${AZURE_SPHERE_MAKE_IMAGE_FILE}")
+azsphere_target_add_image_package(${PROJECT_NAME})
